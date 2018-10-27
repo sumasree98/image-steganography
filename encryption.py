@@ -4,12 +4,12 @@ from random import randint
 
 #Extracting the image and printing the pixels
 img = cv2.imread("dataset/barbara_gray.bmp", 0)
-img = cv2.blur(img,(17,17))
-#for i in range(img.shape[0]):
-#    for j in range(img.shape[1]):
-#        print img[i][j],
-#    print "\n"
-#print img.size
+#img = cv2.blur(img,(17,17))
+'''for i in range(img.shape[0]):
+    for j in range(img.shape[1]):
+        print img[i][j],
+    print "\n"
+print img.size'''
 
 #storing pixels of image in an array
 pixel = np.zeros((img.shape[0],img.shape[1],8),dtype=np.int)
@@ -19,31 +19,27 @@ for i in range(img.shape[0]):
             pixel[i,j,k] = int((img[i,j]/(2**k))%2)
 
 #The encryption key
-e_key = 127
-encr_key = np.zeros((8))
-for i in range(8):
-    encr_key[i] = int((e_key/(2**i))%2)
+e_key = 16
+divide = e_key*2
 
 #Encrypting the image
+encr_img = np.zeros((img.shape[0],img.shape[1]),dtype=np.int)
+for i in range(img.shape[0]/divide):
+    for j in range(img.shape[1]/divide):
+        for k in range(e_key):
+            for l in range(e_key):
+                encr_img[(divide*i)+k+e_key,(divide*j)+l+e_key] = img[(divide*i)+k,(divide*j)+l]
+                encr_img[(divide*i)+k+e_key,(divide*j)+l] = img[(divide*i)+k,(divide*j)+l+e_key]
+                encr_img[(divide*i)+k,(divide*j)+l+e_key] = img[(divide*i)+k+e_key,(divide*j)+l]
+                encr_img[(divide*i)+k,(divide*j)+l] = img[(divide*i)+k+e_key,(divide*j)+l+e_key]
+
+#cv2.imwrite('encrypted_img.bmp',encr_img)
+
 encr_pixel = np.zeros((img.shape[0],img.shape[1],8),dtype=np.int)
 for i in range(img.shape[0]):
     for j in range(img.shape[1]):
         for k in range(8):
-            if(pixel[i,j,k]==encr_key[k]):
-                encr_pixel[i,j,k] = 0
-            else:
-                encr_pixel[i,j,k] = 1
-
-#converting binary values of image into decimal
-encr_img = np.zeros((img.shape[0],img.shape[1]),dtype=np.int)
-for i in range(img.shape[0]):
-    for j in range(img.shape[1]):
-        sum = 0
-        for k in range(8):
-            sum = sum + (encr_pixel[i,j,k]*(2**k))
-        encr_img[i,j] = sum
-
-cv2.imwrite('encrypted_img.bmp',encr_img)
+            encr_pixel[i,j,k] = int((encr_img[i,j]/(2**k))%2)
 
 #difference between bits
 diff = np.zeros((img.shape[0]/2,img.shape[1]/2,3),dtype=np.int)
@@ -52,13 +48,11 @@ for i in range(0,img.shape[0],2):
         diff[i/2,j/2,0] = encr_img[i,j+1] - encr_img[i,j]
         diff[i/2,j/2,1] = encr_img[i+1,j] - encr_img[i,j]
         diff[i/2,j/2,2] = encr_img[i+1,j+1] - encr_img[i,j]
-for i in range(img.shape[0]/2):
-    for j in range(img.shape[1]/2):
+'''for i in range(0,img.shape[0],2):
+    for j in range(0,img.shape[1],2):
         for k in range(3):
-            if(diff[i,j,k] > 10):
-                diff[i,j,k] = 10
-            if(diff[i,j,k] < -10):
-                diff[i,j,k] = -10
+            print diff[i/2,j/2,k],
+        print ""'''
 
 #RLC compression
 rlc = np.zeros((img.shape[0]/2,img.shape[1]/2,3,2), dtype=np.int)
@@ -75,6 +69,11 @@ for i in range(img.shape[0]/2):
                 rlc[i,j,loopcount,0]=count
                 rlc[i,j,loopcount,1]=diff[i,j,k]
                 loopcount += 1
+'''for i in range(img.shape[0]/2):
+    for j in range(img.shape[1]/2):
+        for k in range(3):
+            print rlc[i,j,k,0],"-",rlc[i,j,k,1],
+        print ""'''
 
 #huffman table
 huffman_code_length = np.zeros((3,11),dtype=np.int)
@@ -153,27 +152,32 @@ m_threshold = 0
 rlc_sign_len = 0
 for i in range(img.shape[0]/2):
     for j in range(img.shape[1]/2):
-        huffman[i,j] = ""
-        huffman_length[i,j] = 0
-        index = 0
-        count1 = 0
-        while (index<=2 and rlc[i,j,index,1]!=0):
-            huffman[i,j] += huffman_table[rlc[i,j,index,0],rlc[i,j,index,1]]
-            huffman_length[i,j] += huffman_code_length[rlc[i,j,index,0],rlc[i,j,index,1]]
-            index += 1
-            count1 += 1
-        if (huffman_length[i,j]>=24):
+        if (rlc[i,j,0,1]>10 or rlc[i,j,1,1]>10 or rlc[i,j,2,1]>10 or rlc[i,j,0,1]<-10 or rlc[i,j,1,1]<-10 or rlc[i,j,2,1]<-10):
             m_threshold += 1
             threshold_set[i,j] = 0
         else:
-            l_threshold += 1
-            threshold_set[i,j] = 1
-            rlc_sign_len += count1
+            huffman[i,j] = ""
+            huffman_length[i,j] = 0
+            index = 0
+            count1 = 0
+            while (index<=2 and rlc[i,j,index,1]!=0):
+                huffman[i,j] += huffman_table[rlc[i,j,index,0],rlc[i,j,index,1]]
+                huffman_length[i,j] += huffman_code_length[rlc[i,j,index,0],rlc[i,j,index,1]]
+                index += 1
+                count1 += 1
+            if (huffman_length[i,j]>=24):
+                m_threshold += 1
+                threshold_set[i,j] = 0
+            else:
+                l_threshold += 1
+                threshold_set[i,j] = 1
+                rlc_sign_len += count1
+
 rlc_sign = np.zeros((rlc_sign_len),dtype=np.int)
 count = 0
 for i in range(img.shape[0]/2):
     for j in range(img.shape[1]/2):
-        if (huffman_length[i,j]<24):
+        if (threshold_set[i,j] == 1):
             index = 0
             while (index<=2 and rlc[i,j,index,1]!=0):
                 if (rlc[i,j,index,1]<0):
