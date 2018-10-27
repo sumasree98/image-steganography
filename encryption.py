@@ -382,4 +382,4 @@ for i in range(img.shape[0]):
             sum = sum + (output_img_bits[i,j,k]*(2**k))
         output_img[i,j] = sum
 
-cv2.imwrite('final_img.bmp',output_img)
+cv2.imwrite('encrypted_img.bmp',output_img)

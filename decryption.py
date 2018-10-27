@@ -1,6 +1,7 @@
 import cv2
 import numpy as np 
 from random import randint
+import time
 
 from encryption import output_img
 from encryption import e_key 
@@ -220,6 +221,75 @@ for i in range(0,output_img.shape[0],2):
             
             index1 += 1
 
+final_img_bits = np.zeros((output_img.shape[0],output_img.shape[1],8),dtype=np.int)
+for i in range(output_img.shape[0]):
+    for j in range(output_img.shape[1]):
+        for k in range(8):
+            final_img_bits[i,j,k] = int((final_img[i,j]/(2**k))%2)
+'''matrix_psi = np.zeros((alpha,q),dtype=np.int)
+index1 = 0
+for i in range(alpha):
+    for j in range(p):
+        matrix_psi[j,i] = data_hiding_key[index1]
+        index1 += 1
+for i in range(alpha):
+    for j in range (p,p+alpha):
+        if (i==j):
+            matrix_psi[i,j] = 1
+        else:
+            matrix_psi[i,j] = 0'''
+matrix_psi = np.zeros((p,q),dtype=np.int)
+for i in range(p):
+    for j in range (p):
+        if (i==j):
+            matrix_psi[i,j] = 1
+        else:
+            matrix_psi[i,j] = 0
+index1 = 0
+for i in range(p):
+    for j in range(p,p+alpha):
+        matrix_psi[i,j] = data_hiding_key[index1]
+        index1 += 1
+
+matrix_psi_i = matrix_psi.transpose()
+
+column_vectors_g = np.zeros((no_groups,no_blocks,4,u),dtype=np.int)
+for i in range(no_groups):
+    for j in range(q):
+        b_c = 0
+        pixel_c = 0
+        u1 = 0
+        k=0
+        while(True):
+            if (pixel_c!=0 or u1!=0):
+                column_vectors_g[i,b_c,pixel_c,u1] += matrix_psi_i[j,k]*binary_column_vector[k,i]
+                k += 1
+                if(k==p):
+                    break
+            u1 += 1
+            if(u1 == u):
+                pixel_c += 1
+                u1 = 0
+            if(pixel_c==4):
+                b_c += 1
+                pixel_c = 0
+
+block_count = 0
+group_count = 0
+for i in range(0,output_img.shape[0],2):
+    for j in range(0,output_img.shape[1],2):
+        if (threshold_set[i/2,j/2]==0):
+            for k in range(u):
+                if (k!=0):
+                     final_img_bits[i,j,k] = column_vectors_g[group_count,block_count,0,k]
+                final_img_bits[i+1,j,k] = column_vectors_g[group_count,block_count,1,k]
+                final_img_bits[i,j+1,k] = column_vectors_g[group_count,block_count,2,k]
+                final_img_bits[i+1,j+1,k] = column_vectors_g[group_count,block_count,3,k]
+            block_count += 1
+            if (block_count == no_blocks):
+                block_count = 0
+                group_count += 1
+
 user_len = (total_len - index)/8
 user_ascii_bin = np.zeros((user_len,8),dtype=np.int)
 for i in range(user_len):
@@ -236,6 +306,13 @@ for i in range(user_len):
 
 print "The hidden user data: ",user_data
 
+'''for i in range(output_img.shape[0]):
+    for j in range(output_img.shape[1]):
+        sum = 0
+        for k in range(8):
+            sum = sum + (final_img_bits[i,j,k]*(2**k))
+        final_img[i,j] = sum'''
+
 divide = e_key*2
 decr_img = np.zeros((output_img.shape[0],output_img.shape[1]),dtype=np.int)
 for i in range(output_img.shape[0]/divide):
@@ -250,4 +327,4 @@ for i in range(output_img.shape[0]/divide):
 cv2.imwrite('decrypted_img.bmp',decr_img)
 
 end_time = time.time()
-print "The total time taken: ",(end_time-start_time)
+print "The total time taken: %.2f" %round((end_time-start_time),2)
