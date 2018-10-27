@@ -3,13 +3,7 @@ import numpy as np
 from random import randint
 
 #Extracting the image and printing the pixels
-img = cv2.imread("dataset/barbara_gray.bmp", 0)
-#img = cv2.blur(img,(17,17))
-'''for i in range(img.shape[0]):
-    for j in range(img.shape[1]):
-        print img[i][j],
-    print "\n"
-print img.size'''
+img = cv2.imread("dataset/lena_gray.bmp", 0)
 
 #storing pixels of image in an array
 pixel = np.zeros((img.shape[0],img.shape[1],8),dtype=np.int)
@@ -48,11 +42,6 @@ for i in range(0,img.shape[0],2):
         diff[i/2,j/2,0] = encr_img[i,j+1] - encr_img[i,j]
         diff[i/2,j/2,1] = encr_img[i+1,j] - encr_img[i,j]
         diff[i/2,j/2,2] = encr_img[i+1,j+1] - encr_img[i,j]
-'''for i in range(0,img.shape[0],2):
-    for j in range(0,img.shape[1],2):
-        for k in range(3):
-            print diff[i/2,j/2,k],
-        print ""'''
 
 #RLC compression
 rlc = np.zeros((img.shape[0]/2,img.shape[1]/2,3,2), dtype=np.int)
@@ -69,11 +58,6 @@ for i in range(img.shape[0]/2):
                 rlc[i,j,loopcount,0]=count
                 rlc[i,j,loopcount,1]=diff[i,j,k]
                 loopcount += 1
-'''for i in range(img.shape[0]/2):
-    for j in range(img.shape[1]/2):
-        for k in range(3):
-            print rlc[i,j,k,0],"-",rlc[i,j,k,1],
-        print ""'''
 
 #huffman table
 huffman_code_length = np.zeros((3,11),dtype=np.int)
@@ -259,6 +243,7 @@ for i in range(no_groups):
 
 #user data
 user_data = "Hello World!"
+#user_data = raw_input("Enter data bits to embed: ")
 ascii_bin = np.zeros((len(user_data),8),dtype=np.int)
 index = 0
 for ch in user_data:
