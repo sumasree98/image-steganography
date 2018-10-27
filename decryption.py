@@ -15,12 +15,14 @@ from encryption import huffman_table
 
 start_time = time.time()
 
+#extracting bits of output_img
 output_img_bits = np.zeros((output_img.shape[0],output_img.shape[1],8),dtype=np.int)
 for i in range(output_img.shape[0]):
     for j in range(output_img.shape[1]):
         for k in range(8):
             output_img_bits[i,j,k] = int((output_img[i,j]/(2**k))%2)
 
+#extracting the embedded bits
 embedded_bits = np.zeros((total_len),dtype=np.int)
 def func_retrieve():
     index = 0
@@ -67,6 +69,7 @@ def func_retrieve():
 
 print func_retrieve()
 
+#calculating the number of blocks above and below threshold
 l_threshold = 0
 m_threshold = 0
 for i in range(0,output_img.shape[0],2):
@@ -76,6 +79,7 @@ for i in range(0,output_img.shape[0],2):
         else:
             m_threshold += 1
 
+#extracting the lengths of huffman codes
 huffman_length_len = l_threshold*5
 huffman_length_bits = np.zeros((l_threshold,5),dtype=np.int)
 index = 0
@@ -93,6 +97,7 @@ for i in range(l_threshold):
     huffman_length[i] = sum
     huffman_len += sum
 
+#extracting huffman codes
 huffman = np.chararray((l_threshold),itemsize=50)
 for i in range(l_threshold):
     huffman[i] = ""
@@ -100,6 +105,7 @@ for i in range(l_threshold):
         huffman[i] += str(embedded_bits[index])
         index += 1
 
+#calculating the rlc pairs
 rlc = np.zeros((l_threshold,3,2), dtype=np.int)
 for i in range(l_threshold):
     temp = huffman[i]
@@ -122,6 +128,7 @@ for i in range(l_threshold):
     for j in range(3):
         print rlc[i,j]'''
 
+#calculating the differences
 diff = np.zeros((l_threshold,3),dtype=np.int)
 for i in range(l_threshold):
     if (rlc[i,0,0]==0):
@@ -148,11 +155,13 @@ for i in range(l_threshold):
             rlc_sign_len += 1
 #print rlc_sign_len
 
+#extracting the sign of every difference
 rlc_sign = np.zeros((rlc_sign_len),dtype=np.int)
 for i in range(rlc_sign_len):
     rlc_sign[i] = embedded_bits[index]
     index += 1
 
+#extracting binary column vector
 no_groups = m_threshold/no_blocks + 1
 q = no_blocks*(4*u - 1)
 p = q - alpha
@@ -162,6 +171,7 @@ for i in range(no_groups):
         binary_column_vector[j,i] = embedded_bits[index]
         index += 1
 
+#extracting the bitsream F
 bitstream_f = np.zeros((output_img.shape[0]/2,output_img.shape[1]/2),dtype=np.int)
 bitstream_f_len = (output_img.shape[0]*output_img.shape[1])/4
 for i in range(output_img.shape[0]/2):
@@ -169,6 +179,7 @@ for i in range(output_img.shape[0]/2):
         bitstream_f[i,j] = embedded_bits[index]
         index += 1
 
+#replacing the first bits of the blocks with bitstream F
 threshold_set = np.zeros((output_img.shape[0]/2,output_img.shape[1]/2),dtype=np.int)
 for i in range(0,output_img.shape[0],2):
     for j in range(0,output_img.shape[1],2):
@@ -187,6 +198,7 @@ for i in range(output_img.shape[0]):
     for j in range(output_img.shape[1]):
         final_img[i,j] = output_img[i,j]
 
+#decoding the set 1 blocks of final image
 index1 = 0
 rlc_index = 0
 for i in range(0,output_img.shape[0],2):
@@ -226,18 +238,8 @@ for i in range(output_img.shape[0]):
     for j in range(output_img.shape[1]):
         for k in range(8):
             final_img_bits[i,j,k] = int((final_img[i,j]/(2**k))%2)
-'''matrix_psi = np.zeros((alpha,q),dtype=np.int)
-index1 = 0
-for i in range(alpha):
-    for j in range(p):
-        matrix_psi[j,i] = data_hiding_key[index1]
-        index1 += 1
-for i in range(alpha):
-    for j in range (p,p+alpha):
-        if (i==j):
-            matrix_psi[i,j] = 1
-        else:
-            matrix_psi[i,j] = 0'''
+
+#decoding the set 2 blocks of final image
 matrix_psi = np.zeros((p,q),dtype=np.int)
 for i in range(p):
     for j in range (p):
@@ -290,6 +292,7 @@ for i in range(0,output_img.shape[0],2):
                 block_count = 0
                 group_count += 1
 
+#exracting the user's message
 user_len = (total_len - index)/8
 user_ascii_bin = np.zeros((user_len,8),dtype=np.int)
 for i in range(user_len):
@@ -313,6 +316,7 @@ print "The hidden user data: ",user_data
             sum = sum + (final_img_bits[i,j,k]*(2**k))
         final_img[i,j] = sum'''
 
+#decrypting the image
 divide = e_key*2
 decr_img = np.zeros((output_img.shape[0],output_img.shape[1]),dtype=np.int)
 for i in range(output_img.shape[0]/divide):
