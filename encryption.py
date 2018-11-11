@@ -3,7 +3,7 @@ import numpy as np
 from random import randint
 
 #Extracting the image and printing the pixels
-img = cv2.imread("dataset/lena_gray.bmp", 0)
+img = cv2.imread("dataset/crowd.bmp", 0)
 
 #storing pixels of image in an array
 pixel = np.zeros((img.shape[0],img.shape[1],8),dtype=np.int)

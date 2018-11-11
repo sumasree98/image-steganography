@@ -7,7 +7,7 @@ from skimage.measure import compare_ssim as ssim
 #from encryption import img
 #from decryption import decr_img
 
-img = cv2.imread("dataset/plane.tiff", 0)
+img = cv2.imread("dataset/crowd.bmp", 0)
 decr_img = cv2.imread("decrypted_img.bmp", 0)
 
 def mse(imageA, imageB):
