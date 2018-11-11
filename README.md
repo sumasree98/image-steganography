@@ -28,7 +28,7 @@ pip install scikit-image
 ## Deployment
 Store all the files in a single folder and run the decryption.py file. This file runs encryption.py and the encrypted image is stored as encrypted_img.bmp in the same folder. The final decrypted image is stored as decrypted_img.bmp in the folder and the user data is given as output along with the total time taken for execution. 
 
-To change the image used for encryption, one can change the image in line 6 of encryption.py to any image in the dataset folder. One can also add new images to the dataset folder and use them for encryption (the image should be grayscale and of size 512x512 pixels). The user data can also be changed in line 254 of encryption.py.
+To change the image used for encryption, one can change the image in line 6 of encryption.py to any image in the dataset folder. One can also add new images to the dataset folder and use them for encryption (the image should be grayscale and of size 512x512 pixels). The user data can also be changed in line 245 of encryption.py.
 
 To test the output image, the test.py file should be run after the execution of decryption.py. In test.py, the image in line 10 should be changed to the image used for encryption.
 
